@@ -1,14 +1,15 @@
 {
   "name": "boltz-swap-web-context",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Web Context layer to perform boltz swaps",
-  "main": "webpack.config.js",
+  "main": "dist/index.html",
   "scripts": {
     "build": "webpack",
-    "postinstall": "npm run build",
-    "prepare": "npm run build"
+    "prepack": "npm run build"
   },
   "author": "Peach Sàrl",
+  "repository": "github:Peach2Peach/boltz-swap-web-context",
+
   "license": "MIT",
   "dependencies": {
     "@bitcoinerlab/secp256k1": "^1.1.1",
