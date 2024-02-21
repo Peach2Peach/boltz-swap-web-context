@@ -4,7 +4,8 @@
   "description": "Web Context layer to perform boltz swaps",
   "main": "webpack.config.js",
   "scripts": {
-    "build": "webpack"
+    "build": "webpack",
+    "prepack": "npm run build"
   },
   "author": "Peach Sàrl",
   "license": "MIT",
