@@ -1,12 +1,12 @@
 {
   "name": "boltz-swap-web-context",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Web Context layer to perform boltz swaps",
   "main": "webpack.config.js",
   "scripts": {
     "build": "webpack",
     "postinstall": "npm run build",
-    "prepack": "npm run build"
+    "prepare": "npm run build"
   },
   "author": "Peach Sàrl",
   "license": "MIT",
