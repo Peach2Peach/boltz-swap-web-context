@@ -5,6 +5,7 @@
   "main": "webpack.config.js",
   "scripts": {
     "build": "webpack",
+    "postinstall": "npm run build",
     "prepack": "npm run build"
   },
   "author": "Peach Sàrl",
