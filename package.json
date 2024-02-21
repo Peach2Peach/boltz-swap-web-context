@@ -1,6 +1,6 @@
 {
   "name": "boltz-swap-web-context",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Web Context layer to perform boltz swaps",
   "main": "webpack.config.js",
   "scripts": {
