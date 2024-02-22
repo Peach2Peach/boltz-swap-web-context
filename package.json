@@ -1,6 +1,6 @@
 {
   "name": "boltz-swap-web-context",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Web Context layer to perform boltz swaps",
   "main": "dist/index.html",
   "scripts": {
@@ -9,7 +9,6 @@
   },
   "author": "Peach Sàrl",
   "repository": "github:Peach2Peach/boltz-swap-web-context",
-
   "license": "MIT",
   "dependencies": {
     "@bitcoinerlab/secp256k1": "^1.1.1",
