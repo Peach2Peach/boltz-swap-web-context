@@ -18,6 +18,8 @@ import { LiquidNetworkId, getNetwork } from "./utils/getNetwork";
 const ECPair = ECPairFactory(ecc)
 
 const SESSION_ID_BYTES = 32
+/** `targetFee` currently can return a fee below the allowed minimum, hence we add 2 extra sats */
+const FEE_ESTIMATION_BUFFER = 2
 
 export type ClaimReverseSubmarineSwapProps = {
   apiUrl: string,
@@ -78,7 +80,7 @@ export const claimReverseSubmarineSwap = async ({ address, feeRate = 1, swapInfo
     constructClaimTransaction(
       liquidClaimDetails,
       decodedAddress.script,
-      fee,
+      fee + FEE_ESTIMATION_BUFFER,
       true,
       network,
       decodedAddress.blindingKey,
