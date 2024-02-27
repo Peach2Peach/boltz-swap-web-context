@@ -1,32 +1,32 @@
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const HtmlInlineScriptPlugin = require('html-inline-script-webpack-plugin');
-const path = require('path');
-const webpack = require('webpack');
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const HtmlInlineScriptPlugin = require("html-inline-script-webpack-plugin");
+const path = require("path");
+const webpack = require("webpack");
 
 module.exports = {
-  entry: './index.ts',
-  mode: 'production',
+  entry: "./index.ts",
+  mode: "production",
   output: {
-    filename: './index.js',
-    path: path.resolve(__dirname, 'dist')
+    filename: "./index.js",
+    path: path.resolve(__dirname, "dist"),
   },
   plugins: [
     new webpack.ProvidePlugin({
-      Buffer: ['buffer', 'Buffer'],
+      Buffer: ["buffer", "Buffer"],
     }),
     new HtmlWebpackPlugin(),
-    new HtmlInlineScriptPlugin()
+    new HtmlInlineScriptPlugin(),
   ],
   module: {
-    rules: [{ test: /\.ts$/u, use: 'ts-loader' }],
+    rules: [{ test: /\.ts$/u, use: "ts-loader" }],
   },
   resolve: {
     fallback: {
-      "crypto": require.resolve("crypto-browserify"),
-      "fs": false,
-      "path": require.resolve("path-browserify"),
-      "stream": require.resolve("stream-browserify"),
+      crypto: require.resolve("crypto-browserify"),
+      fs: false,
+      path: require.resolve("path-browserify"),
+      stream: require.resolve("stream-browserify"),
     },
-    extensions: ['.js', '.ts'],
+    extensions: [".js", ".ts"],
   },
 };

@@ -1,68 +1,66 @@
-import * as ecc from "@bitcoinerlab/secp256k1";
-import zkpInit from '@vulpemventures/secp256k1-zkp';
-import { Musig, OutputType, SwapTreeSerializer, detectSwap, targetFee } from "boltz-core";
-import {
-  TaprootUtils as LiquidTaprootUtils,
-  constructClaimTransaction,
-  init,
-} from "boltz-core/dist/lib/liquid";
-import { Buffer } from 'buffer';
-import { randomBytes } from 'crypto';
-import ECPairFactory from 'ecpair';
-import { Transaction as LiquidTransaction } from "liquidjs-lib";
-import { getSwapStatus } from "./boltz-api/getSwapStatus";
-import { postClaimReverseSubmarineSwap } from "./boltz-api/postClaimReverseSubmarineSwap";
-import { ReverseResponse } from "./boltz-api/types";
-import { FEE_ESTIMATION_BUFFER, SESSION_ID_BYTES } from "./constants";
-import { decodeLiquidAddress } from "./utils/decodeLiquidAddress";
-import { LiquidNetworkId, getNetwork } from "./utils/getNetwork";
+import * as ecc from '@bitcoinerlab/secp256k1'
+import zkpInit from '@vulpemventures/secp256k1-zkp'
+import { Musig, OutputType, SwapTreeSerializer, detectSwap, targetFee } from 'boltz-core'
+import { TaprootUtils as LiquidTaprootUtils, constructClaimTransaction, init } from 'boltz-core/dist/lib/liquid'
+import { Buffer } from 'buffer'
+import { randomBytes } from 'crypto'
+import ECPairFactory from 'ecpair'
+import { Transaction as LiquidTransaction } from 'liquidjs-lib'
+import { getSwapStatus } from './boltz-api/getSwapStatus'
+import { postClaimReverseSubmarineSwap } from './boltz-api/postClaimReverseSubmarineSwap'
+import { ReverseResponse } from './boltz-api/types'
+import { FEE_ESTIMATION_BUFFER, SESSION_ID_BYTES } from './constants'
+import { decodeLiquidAddress } from './utils/decodeLiquidAddress'
+import { LiquidNetworkId, getNetwork } from './utils/getNetwork'
 const ECPair = ECPairFactory(ecc)
 
-
-
 export type ClaimReverseSubmarineSwapProps = {
-  apiUrl: string,
+  apiUrl: string
   network: LiquidNetworkId
-  address: string,
-  feeRate: number,
-  swapInfo: ReverseResponse,
+  address: string
+  feeRate: number
+  swapInfo: ReverseResponse
 
   /** hex encoded */
-  privateKey: string,
+  privateKey: string
 
   /** hex encoded */
   preimage: string
 }
-export const claimReverseSubmarineSwap = async ({ address, feeRate = 1, swapInfo, privateKey, preimage, apiUrl, network: networkId }: ClaimReverseSubmarineSwapProps) => {
+export const claimReverseSubmarineSwap = async ({
+  address,
+  feeRate = 1,
+  swapInfo,
+  privateKey,
+  preimage,
+  apiUrl,
+  network: networkId,
+}: ClaimReverseSubmarineSwapProps) => {
   const { id, refundPublicKey, swapTree } = swapInfo
   const swapStatus = await getSwapStatus(id, apiUrl)
   const network = getNetwork(networkId)
   if (!refundPublicKey || !swapTree) throw Error('GENERAL_ERROR')
   if (!swapStatus.transaction?.hex) throw Error('LOCK_TRANSACTION_MISSING')
 
-  const keyPair = ECPair.fromPrivateKey(Buffer.from(privateKey, 'hex'), { network })
-  const boltzPublicKey = Buffer.from(refundPublicKey, 'hex');
+  const keyPair = ECPair.fromPrivateKey(Buffer.from(privateKey, 'hex'), {
+    network,
+  })
+  const boltzPublicKey = Buffer.from(refundPublicKey, 'hex')
 
   const zkp = await zkpInit()
   init(zkp)
 
   // Create a musig signing session and tweak it with the Taptree of the swap scripts
-  const musig = new Musig(zkp, keyPair, randomBytes(SESSION_ID_BYTES), [
-    boltzPublicKey,
-    keyPair.publicKey,
-  ]);
-  const tweakedKey = LiquidTaprootUtils.tweakMusig(
-    musig,
-    SwapTreeSerializer.deserializeSwapTree(swapTree).tree,
-  );
+  const musig = new Musig(zkp, keyPair, randomBytes(SESSION_ID_BYTES), [boltzPublicKey, keyPair.publicKey])
+  const tweakedKey = LiquidTaprootUtils.tweakMusig(musig, SwapTreeSerializer.deserializeSwapTree(swapTree).tree)
 
   // Parse the lockup transaction and find the output relevant for the swap
-  const lockupTx = LiquidTransaction.fromHex(swapStatus.transaction.hex);
-  const swapOutput = detectSwap(tweakedKey, lockupTx);
+  const lockupTx = LiquidTransaction.fromHex(swapStatus.transaction.hex)
+  const swapOutput = detectSwap(tweakedKey, lockupTx)
 
-  if (swapOutput === undefined) throw Error('No swap output found in lockup transaction');
-  
-  const decodedAddress = decodeLiquidAddress(address, network);
+  if (swapOutput === undefined) throw Error('No swap output found in lockup transaction')
+
+  const decodedAddress = decodeLiquidAddress(address, network)
   const liquidClaimDetails = [
     {
       ...swapOutput,
@@ -82,9 +80,9 @@ export const claimReverseSubmarineSwap = async ({ address, feeRate = 1, swapInfo
       fee + FEE_ESTIMATION_BUFFER,
       true,
       network,
-      decodedAddress.blindingKey,
-    ),
-  );
+      decodedAddress.blindingKey
+    )
+  )
 
   // Get the partial signature from Boltz
   const boltzSig = await postClaimReverseSubmarineSwap(id, apiUrl, {
@@ -94,30 +92,17 @@ export const claimReverseSubmarineSwap = async ({ address, feeRate = 1, swapInfo
     pubNonce: Buffer.from(musig.getPublicNonce()).toString('hex'),
   })
 
-
-  musig.aggregateNonces([
-    [boltzPublicKey, Musig.parsePubNonce(boltzSig.pubNonce)],
-  ]);
+  musig.aggregateNonces([[boltzPublicKey, Musig.parsePubNonce(boltzSig.pubNonce)]])
 
   // Initialize the session to sign the claim transaction
-  musig.initializeSession(
-    LiquidTaprootUtils.hashForWitnessV1(
-      network,
-      liquidClaimDetails,
-      claimTx,
-      0,
-    )
-  );
+  musig.initializeSession(LiquidTaprootUtils.hashForWitnessV1(network, liquidClaimDetails, claimTx, 0))
 
   // Add the partial signature from Boltz
-  musig.addPartial(
-    boltzPublicKey,
-    Buffer.from(boltzSig.partialSignature, 'hex'),
-  );
+  musig.addPartial(boltzPublicKey, Buffer.from(boltzSig.partialSignature, 'hex'))
   // Create our partial signature
-  musig.signPartial();
+  musig.signPartial()
 
   // Witness of the input to the aggregated signature
-  claimTx.ins[0].witness = [musig.aggregatePartials()];
+  claimTx.ins[0].witness = [musig.aggregatePartials()]
   return claimTx.toHex()
 }
