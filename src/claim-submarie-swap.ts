@@ -47,6 +47,7 @@ export const claimSubmarineSwap = async ({
   const claimTxDetails = await getSubmarineSwapClaimDetails(id, apiUrl)
   // Verify that Boltz actually paid the invoice by comparing the preimage hash
   // of the invoice to the SHA256 hash of the preimage from the response
+
   const invoicePreimageHash = Buffer.from(
     bolt11.decode(invoice).tags.find((tag) => tag.tagName === 'payment_hash')!.data as string,
     'hex'
@@ -69,14 +70,12 @@ export const claimSubmarineSwap = async ({
 
   // Initialize the session to sign the transaction hash from the response
   musig.initializeSession(Buffer.from(claimTxDetails.transactionHash, 'hex'))
-  window.ReactNativeWebView.postMessage(JSON.stringify({ data: 'after initializeSession' }))
 
   // Give our public nonce and the partial signature to Boltz
   const result = await postClaimSubmarineSwap(id, apiUrl, {
     pubNonce: Buffer.from(musig.getPublicNonce()).toString('hex'),
     partialSignature: Buffer.from(musig.signPartial()).toString('hex'),
   })
-  window.ReactNativeWebView.postMessage(JSON.stringify(result))
 
   return result
 }
