@@ -13,13 +13,12 @@ import { Transaction as LiquidTransaction } from "liquidjs-lib";
 import { getSwapStatus } from "./boltz-api/getSwapStatus";
 import { postClaimReverseSubmarineSwap } from "./boltz-api/postClaimReverseSubmarineSwap";
 import { ReverseResponse } from "./boltz-api/types";
+import { FEE_ESTIMATION_BUFFER, SESSION_ID_BYTES } from "./constants";
 import { decodeLiquidAddress } from "./utils/decodeLiquidAddress";
 import { LiquidNetworkId, getNetwork } from "./utils/getNetwork";
 const ECPair = ECPairFactory(ecc)
 
-const SESSION_ID_BYTES = 32
-/** `targetFee` currently can return a fee below the allowed minimum, hence we add 2 extra sats */
-const FEE_ESTIMATION_BUFFER = 2
+
 
 export type ClaimReverseSubmarineSwapProps = {
   apiUrl: string,

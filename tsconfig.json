@@ -7,6 +7,6 @@
     "moduleResolution": "node",
   },
   "files": [
-    "./index.ts"
+    "./index.ts", "src/constants.ts"
   ]
 }

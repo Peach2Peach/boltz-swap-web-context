@@ -247,5 +247,7 @@ export type SwapStatus = {
     id?: string;
     /** Raw hex of the transaction */
     hex?: string;
+    /** Block ETA */
+    eta?: number;
   };
 }
