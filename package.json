@@ -1,6 +1,6 @@
 {
   "name": "boltz-swap-web-context",
-  "version": "1.0.6",
+  "version": "1.1.0",
   "description": "Web Context layer to perform boltz swaps",
   "main": "dist/index.html",
   "scripts": {
