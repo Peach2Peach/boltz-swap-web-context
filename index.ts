@@ -32,6 +32,7 @@ window.claimReverseSubmarineSwap = async (
       })
     );
   } catch (e) {
+    console.log(e);
     window.ReactNativeWebView.postMessage(JSON.stringify({ error: e.message }));
   }
 };
